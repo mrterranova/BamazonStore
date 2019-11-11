@@ -47,7 +47,7 @@ function enterBamazon () {
             //make the table look pretty by adding spaces for varying lengths of words
             padLength = res[i].product_name.length;
             spaces = 30 - padLength;
-            for (var j=0; j<spaces; j++) {
+            for (var j = 0; j < spaces; j++) {
                 res[i].product_name += " ";
             }
             //print the table in terminal
@@ -144,8 +144,9 @@ function numberOfItems(number) {
         ]).then(answer =>{
                 num = parseInt(answer.amount);
                 //determine if there are enough of item in stock user requested
-                if (num <= res[number].stock_quantity){
+                if (num <= res[number].stock_quantity && num > 0){
                     difference = res[number-1].stock_quantity - num;
+                    //update query with the number difference
                     connection.query("UPDATE products SET stock_quantity = "+ difference +" WHERE item_id = "+res[number-1].item_id+";")
                     console.log("\nWe will have this shipped to you within the next 24 hours.")
                     inquirer
@@ -170,7 +171,7 @@ function numberOfItems(number) {
                             }
                         })
                 //if stock is more than what have send user a message
-                } else if (num > res[number-1].stock_quantity) {
+                } else if (num >= res[number-1].stock_quantity) {
                     console.log("\nWe apologize for the inconvenience. We do not have "+ num + " "+ res[number-1].product_name +"s at this time.\n")
                     purchaseProduct();
                 //if user enters "0" send them back to the main screen
@@ -179,7 +180,7 @@ function numberOfItems(number) {
                 //anything else requestion user for an amount.
                 } else {
                     console.log("\nOur systems don't recognize the selection made. Please try again.");
-                    numberOfItems();
+                    numberOfItems(number);
                 }
             })
         });
