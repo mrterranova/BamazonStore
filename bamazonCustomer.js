@@ -11,6 +11,13 @@ let connection = mysql.createConnection({
     database: "bamazon"
 })
 
+//formatter for currency
+const formatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2
+});
+
 //global variables to be used across functions
 var numProducts;
 var number;
@@ -56,7 +63,7 @@ function enterBamazon () {
                 res[i].department_name += " "
             }
             //print the table in terminal
-            console.log(res[i].item_id+"\t"+res[i].department_name+"\t\t"+res[i].product_name+res[i].price+"\t\t"+res[i].stock_quantity);
+            console.log(res[i].item_id+"\t"+res[i].department_name+"\t\t"+res[i].product_name+formatter.format(res[i].price)+"\t\t"+res[i].stock_quantity);
         }
         console.log("\n----------------------------------------------------------------------------------------")
         //see if user would like to shop
@@ -128,7 +135,7 @@ function purchaseProduct() {
                 })
             //if the user does not provide a viable ID then send them a message
             } else{
-                console.log("Sorry we didn't recognize that product ID, please try again.\n\n")
+                console.log("\n*********************************\nSorry we didn't recognize that product ID, please try again.\n*********************************\n\n")
                 purchaseProduct();
             }
         });
@@ -148,15 +155,15 @@ function numberOfItems(number) {
             }
         ]).then(answer =>{
                 num = parseInt(answer.amount);
-                console.log("num", num);
                 //determine if there are enough of item in stock user requested
                 if (num <= res[number-1].stock_quantity && num > 0){
                     difference = res[number-1].stock_quantity - num;
-                    console.log(difference)
                     //update query with the number difference
                     connection.query("UPDATE products SET stock_quantity = "+ difference +" WHERE item_id = "+res[number-1].item_id+";");
                     connection.query("UPDATE products SET product_sales = "+ num*res[number-1].price + " WHERE item_id = "+ res[number-1].item_id+";");
-                    console.log("\nWe will have this shipped to you within the next 24 hours.")
+                    totalCost = num*res[number-1].price
+                    //print out total
+                    console.log("\n*********************************\nTotal cost: "+formatter.format(totalCost)+".\nWe will have this shipped to you within the next 24 hours.\n*********************************\n")
                     inquirer
                         .prompt([
                             {
@@ -180,14 +187,14 @@ function numberOfItems(number) {
                         })
                 //if stock is more than what have send user a message
                 } else if (num >= res[number-1].stock_quantity) {
-                    console.log("\nWe apologize for the inconvenience. We do not have "+ num + " "+ res[number-1].product_name +"s at this time.\n")
+                    console.log("\n*********************************\nWe apologize for the inconvenience. We do not have "+ num + " "+ res[number-1].product_name +"s at this time.\n*********************************\n")
                     purchaseProduct();
                 //if user enters "0" send them back to the main screen
                 } else if (num === 0 ) {
                     enterBamazon();
                 //anything else requestion user for an amount.
                 } else {
-                    console.log("\nOur systems don't recognize the selection made. Please try again.");
+                    console.log("\n*********************************\nOur systems don't recognize the selection made. Please try again.\n*********************************\n");
                     numberOfItems(number);
                 }
             })

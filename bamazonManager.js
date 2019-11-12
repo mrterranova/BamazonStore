@@ -11,6 +11,13 @@ let connection = mysql.createConnection({
     database: "bamazon"
 });
 
+const formatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2
+});
+
+
 //make the connection and begin the program
 connection.connect(err => {
     if(err) throw err;
@@ -73,7 +80,7 @@ function viewProducts() {
             }
             res[i].price += " ";
             //print the table in terminal
-            console.log(res[i].item_id+"\t"+res[i].department_name+"\t\t"+res[i].product_name+res[i].price+"\t\t"+res[i].stock_quantity+"\t\t"+res[i].product_sales);
+            console.log(res[i].item_id+"\t"+res[i].department_name+"\t\t"+res[i].product_name+formatter.format(res[i].price)+"\t\t"+res[i].stock_quantity+"\t\t"+res[i].product_sales);
         }
         console.log("\n-------------------------------------------------------------------------------------------------------")
         //go back to main menu
@@ -85,7 +92,7 @@ function viewProducts() {
 function lowInventory() {
     connection.query ("SELECT * FROM products", function(err, res) {
         if (err) throw err;
-        console.log("\n_________________________________________________\nPlease restore the following items:\n_________________________________________________");
+        console.log("\n*********************************\n__________________________________\nPlease restore the following items:\n__________________________________");
         for (var i=0; i < res.length; i++) {
             if (res[i].stock_quantity < 10 && res[i].stock_quantity > 4) {
                 console.log(res[i].product_name +": "+res[i].stock_quantity + " remaining.");
@@ -93,7 +100,7 @@ function lowInventory() {
                 console.log("CRITICAL: "+ res[i].product_name +": "+res[i].stock_quantity + " remaining.")
             }
         }
-        console.log("\n_________________________________________________\n")
+        console.log("\n__________________________________\n\n*********************************\n")
         managerMenu();
     });
 }
@@ -115,11 +122,11 @@ function addInventory() {
             addStock = res[answers.inventory-1].stock_quantity + parseInt(answers.stock)
 
             connection.query("UPDATE products SET stock_quantity = "+ addStock +" WHERE item_id = "+res[answers.inventory-1].item_id+";")
-            console.log(res[answers.inventory-1].product_name+": "+answers.stock+" added.\nTotal stock: " +addStock+ ".");
+            console.log("\n*********************************\n"+res[answers.inventory-1].product_name+": "+answers.stock+" added.\nTotal stock: " +addStock+ ".\n*********************************\n");
             word = "addInventory"
             repeatCurrentCommand(word)
             } else {
-                console.log("Error. Please retype the product ID and stock amount.");
+                console.log("\n*********************************\nError. Please retype the product ID and stock amount.\n*********************************\n");
                 addInventory();
             }
         });
@@ -143,14 +150,13 @@ function newProduct() {
                 message: "Starting Stock Amount:\n"
             }
         ]). then (answers => {
-            console.log(answers.name, answers.department, answers.price, answers.stock)
             if (parseFloat(answers.price) && answers.stock % 1 === 0 && answers.price > 0 && answers.stock > 0){
-            connection.query ("INSERT INTO products (product_name, department_name, price, stock_quantity, product_sales) VALUES ('"+answers.name+"', '"+answers.department+"', "+parseInt(answers.price)+", "+parseFloat(answers.stock)+", 0);");
-            console.log("New product "+ answers.name + " has been added.");
+            connection.query ("INSERT INTO products (product_name, department_name, price, stock_quantity, product_sales) VALUES ('"+answers.name+"', '"+answers.department+"', "+parseFloat(answers.price)+", "+parseInt(answers.stock)+", 0);");
+            console.log("\n*********************************\nNew product "+ answers.name + " has been added.\n*********************************\n");
             word = "newProduct"
             repeatCurrentCommand(word);
             } else {
-                console.log("Error. Please check values for price and stock amounts.");
+                console.log("\n*********************************\nError. Please check values for price and stock amounts.\n*********************************\n");
                 newProduct();
             }
         });
