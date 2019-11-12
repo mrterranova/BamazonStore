@@ -107,10 +107,10 @@ function purchaseProduct() {
             // make sure answer is number and not string
             number = parseInt(answer.item)
             // make sure that the number is viable
-            if (number < numProducts+1){
+            if (number < numProducts+1 && number > 0){
                 connection.query ("SELECT * FROM products", function(err, res) {
                     if (err) throw err;
-                    console.log("\nShopping Cart: "+res[number-1].product_name+" at $"+res[number-1].price+".00\n");
+                    console.log("\nShopping Cart: "+res[number-1].product_name+" at "+formatter.format(res[number-1].price)+"\n");
                     //confirmation that the order is correct
                     inquirer
                         .prompt([
