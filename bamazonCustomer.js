@@ -41,19 +41,24 @@ function enterBamazon () {
     connection.query ("SELECT * FROM products", function(err, res) {
         if (err) throw err;
         numProducts = res.length;
-        console.log( "\t\tBAMAZON CATALOGUE\n---------------------------------------------------------------\n"+
-        "ID\tProduct\t\t\t     Price\t  Amount Left\n---------------------------------------------------------------");
+        console.log( "\t\t\t\tBAMAZON CATALOGUE\n----------------------------------------------------------------------------------------\n"+
+        "ID\tDepartment\t\tProduct\t\t\t     Price\t  Amount Left\n----------------------------------------------------------------------------------------");
         for (var i=0; i< res.length; i ++){
             //make the table look pretty by adding spaces for varying lengths of words
             padLength = res[i].product_name.length;
+            departLength = res[i].department_name.length;
             spaces = 30 - padLength;
+            moreSpaces = 15 - departLength;
             for (var j = 0; j < spaces; j++) {
                 res[i].product_name += " ";
             }
+            for (var k=0; k < moreSpaces; k++){
+                res[i].department_name += " "
+            }
             //print the table in terminal
-            console.log(res[i].item_id+"\t"+res[i].product_name+res[i].price+"\t\t"+res[i].stock_quantity);
+            console.log(res[i].item_id+"\t"+res[i].department_name+"\t\t"+res[i].product_name+res[i].price+"\t\t"+res[i].stock_quantity);
         }
-        console.log("\n---------------------------------------------------------------")
+        console.log("\n----------------------------------------------------------------------------------------")
         //see if user would like to shop
         inquireItem();
     });
@@ -139,15 +144,18 @@ function numberOfItems(number) {
         .prompt([
             {
                 name: "amount",
-                message: "How many would you like to purchase?\nPlease note: entering '0' will take you back to the main menu.\n"
+                message: "How many would you like to purchase?\nPlease note: entering '0' will take you back to the main menu."
             }
         ]).then(answer =>{
                 num = parseInt(answer.amount);
+                console.log("num", num);
                 //determine if there are enough of item in stock user requested
-                if (num <= res[number].stock_quantity && num > 0){
+                if (num <= res[number-1].stock_quantity && num > 0){
                     difference = res[number-1].stock_quantity - num;
+                    console.log(difference)
                     //update query with the number difference
-                    connection.query("UPDATE products SET stock_quantity = "+ difference +" WHERE item_id = "+res[number-1].item_id+";")
+                    connection.query("UPDATE products SET stock_quantity = "+ difference +" WHERE item_id = "+res[number-1].item_id+";");
+                    connection.query("UPDATE products SET product_sales = "+ num*res[number-1].price + " WHERE item_id = "+ res[number-1].item_id+";");
                     console.log("\nWe will have this shipped to you within the next 24 hours.")
                     inquirer
                         .prompt([
